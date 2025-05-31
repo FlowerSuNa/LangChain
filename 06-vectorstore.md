@@ -1,5 +1,7 @@
 # Vector DB
 
+[문서](https://python.langchain.com/docs/integrations/vectorstores/)
+
 - 벡터화된 데이터를 효율적으로 저장하고 검색하기 위한 특수 데이터베이스 시스템
 - 텍스트나 이미지 등의 비정형 데이터를 고차원 벡터 공간에 매핑하여 저장
 - 유사도 기반 검색을 통해 의미적으로 가까운 데이터를 빠르게 검색 가능
