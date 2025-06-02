@@ -80,7 +80,9 @@ tfidf_df
 
 **3) Word2Vec**
 
-- 딥러닝 기반으로 학습하여 단어의 의미적 관계를 벡터 공간에 표현한 기법임
+- 단어 간 의미적 유사성을 벡터 공간에 반영하도록 학습하는 딥러닝 기반 임베딩 기법임
+- 주어진 문맥에서 단어를 예측하거나, 특정 단어가 주어졌을 때 주변 단어를 예측하는 방식(CBOW, Skip-gram)을 통해 단어 의미를 학습함
+- 의미적으로 유사한 단어들이 벡터 공간상에서 가깝게 위치함
 
 ```python
 # Word2Vec 벡터화
@@ -119,5 +121,20 @@ word2vec_df
 | ##처리   | 0.049396  | -0.017761 | 0.110673  | -0.054860 | 0.045201  |
 
 ## 2. Sentence Embedding
+
+- 단어 임베딩 개념을 확장하여, 문장 전체의 의미를 하나의 고정 길이 벡터로 표현하는 기법임
+- 의미적으로 유사한 문장일수록 벡터 공간상에서 가까운 위치에 매핑되도록 학습함
+- 검색, 유사도 분석, 의미 기반 클러스터링 등 다양한 자연어 처리 작업에 활용됨
+
+```python
+### SBERT를 이용한 문장 벡터화
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('BAAI/bge-m3')
+sentence_vector = model.encode("자연어처리를 공부합니다")
+
+print(f"문장 벡터 크기: {len(sentence_vector)}")
+print(sentence_vector)
+```
 
 ## 3. Document Embedding
