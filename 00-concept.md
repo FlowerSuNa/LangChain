@@ -1,6 +1,7 @@
 # LangChain
 
 - LLM 기반 애플리케이션 개발을 위한 프레임워크임
+- LLM 애플리케이션 라이프사이클의 모든 단계를 다루는 오픈 소스 라이브러리와 도구 모음을 제공함
 - Chain과 Agent라는 두 가지 핵심 기능을 통해 LLM 애플리케이션을 효율적으로 개발하도록 지원함
     - Chain : 작업을 순차적으로 실행하는 파이프라인 구조 제공
     - Agent : 자율적 의사결정이 가능한 실행 단위
@@ -13,6 +14,7 @@
         style="border: 0;">
 </div>
 
+<br>
 
 ## 1. 등장 배경
 
@@ -26,15 +28,20 @@
     - Python과 JavaScript 라이브러리를 제공함
     - LLM 애플리케이션을 구축한 다음 통합할 수 있는 중앙 집중식 개발 환경을 갖추고 있음
 
+<br>
 
 ## 2. 구성 요소 (Components)
 
 - Model: 텍스트 생성의 중심으로, 일반 텍스트 입력(LLM) 또는 메시지 기반 입력(Chat Model)을 처리함
-- Prompt & Memory: 프롬프트 구성과 대화 히스토리 관리를 통해 일관된 맥락 유지 가능
-- Document Handling: Document Loader, Text Splitter를 통해 외부 문서를 불러오고, 처리 가능한 단위로 분할함
-- Embedding & Vector Store: 문서를 벡터화하고 Vectorstore에 저장하여 유사도 기반 검색을 수행함
+    - OpenAI, HuggingFace, Ollama 등 다양한 모델을 지원함
+- Prompt & Memory: 프롬프트 구성과 대화 히스토리 관리를 통해 일관된 맥락을 유지함
+    - 체인과 에이전트는 메모리 기능이 없다면 입력값을 독립적으로 처리해 앞선 대화를 고려하지 못함
+- Document Handling: `DocumentLoader`, `TextSplitter`를 통해 외부 문서를 불러오고, 처리 가능한 단위로 분할함
+- Embedding & Vector Store: 문서를 벡터화하고 Vector Store에 저장하여 유사도 기반 검색을 수행함
+    - 인덱스 모듈을 사용해 문서와 LLM 간 연결이 가능함
 - 각 컴포넌트는 독립적이며, 모듈형 구조로 다양한 조합이 가능함 (ex. RAG 시스템 구축)
 
+<br>
 
 ## 3. 개념
 
@@ -60,9 +67,10 @@
     - 열린 질문으로 LLM이 풍부한 답변을 제공하도록 해야 함
     - 대화의 맥락에 적합한 언어와 문제를 선택해야 함
         - LLM이 상황에 맞는 표현을 선택하는데 도움을 줌
-- LangChain에는 명령을 잘 전달하기 위한 `PromptTemplate` 클래스가 있음
-    - 컨텍스트와 질의를 수동으로 작성할 필요없이 프롬프트의 구성을 구조화해 줌
-    - 템플릿 안에 특정 지침이 포함하거나 Few-Shot 프롬프트를 사용할 수 있음
+- LangChain에는 명령을 명확히 전달할 수 있도록 도와주는 PromptTemplate 클래스가 있음
+    - 컨텍스트와 질의를 수동으로 일일이 작성할 필요 없이, 프롬프트 구성을 구조화할 수 있음
+    - 템플릿 내부에 지침을 포함하거나, Few-Shot 예제를 함께 넣어 사용할 수 있음
+    - 변수 치환을 통해 동적 프롬프트를 구성할 수 있어, 다양한 입력에 대해 유연하게 대응 가능함
 
 ### 3\) 체인 (Chains)
 
@@ -91,15 +99,23 @@
 - LangChain에서는 `Tool`, `AgentExecutor`, `LLMChain` 등을 조합하여 Agent를 구성함
 - 복잡한 상태 기반 흐름 제어가 필요한 경우, **LangGraph**를 활용해 에이전트의 실행 흐름을 DAG 형태로 시각화 및 제어할 수 있음
 
+<br>
+
 ## 4. Setup
 
 - `langchain` 프레임워크를 설치하면 `langchain-core`, `langchain-community`, `langsmith` 등 프로젝트 수행에 필수적인 라이브러리들이 함께 설치됨
+    - `langchain-core` : 다른 패키지에 최소한으로 의존하면서 핵심 기능을 제공함
+    - `langchain-community` : 외부 서비스 및 플랫폼과의 통합을 담당함
+    - `langchain-experimental` : 아직 안정화되지 않은 새로운 기능들을 포함함 (애플리케이션 개발에는 권장하지 않음)
 - 단, 다양한 외부 모델 제공자와 데이터 저장소 등과 통합을 위해서는 의존성 설치가 따로 필요함
     - 만약 OpenAI에서 제공하는 LLM을 사용하려면 `langchain-openai`, `tiktoken` 라이브러리를 설치해야 함
         - `langchain-openai` : GPT-3.5, GPT-4 등 LLM 모델과 기타 보조 도구
         - `tiktoken` : OpenAI 모델이 사용하는 Tokenizer 
 
+<br>
+
 ## Reference
 
 - [링크1](https://brunch.co.kr/@ywkim36/147)
 - [링크2](https://wikidocs.net/231153)
+- GPT API를 활용한 인공지능 앱 개발 [2판] | 올리비에 케일린, 마리-알리스 블레트 지음 | 이일섭, 박태환 옮김
