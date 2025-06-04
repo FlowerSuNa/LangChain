@@ -136,5 +136,3 @@ sentence_vector = model.encode("자연어처리를 공부합니다")
 print(f"문장 벡터 크기: {len(sentence_vector)}")
 print(sentence_vector)
 ```
-
-## 3. Document Embedding

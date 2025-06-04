@@ -1,7 +1,5 @@
 # LangChain 기본 기능 사용
 
-- [API 문서](https://python.langchain.com/api_reference/)
-
 **1. Setup** : `.env` 파일에 API 키 등을 입력하고, 환경 변수로 불러와 사용함
 
 ```python
@@ -42,7 +40,7 @@ print("답변: ", response.content)
 
 - `PromptTemplate` : 단일 텍스트 입력을 변수로 구성해 포맷팅할 수 있는 기본 프롬프트 템플릿
 - `ChatPromptTemplate` : 여러 메시지(Human, AI, System 등)를 포함하는 대화형 프롬프트 템플릿
-    - `MessagesPlaceholder` : 기존 메시지 목록을 템플릿 내 특정 위치에 삽입할 수 있도록 도와주는 클래스
+- `MessagesPlaceholder` : 기존 메시지 목록을 템플릿 내 특정 위치에 삽입할 수 있도록 도와주는 클래스
 
 ```python
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder

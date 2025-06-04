@@ -1,33 +1,25 @@
 # RAG (Retrieval-Augmented Generation)
 
-**등장 배경**
+### 등장 배경
 - LLM이 매일 학습하지는 않음
     - ChatGPT4는 2023년 2월까지의 데이터로 학습됨
     - 학습 이후에 일어난 사건이나 지식에 대해 알지 못함
 - 이런 LLM이 보다 정확하고 최신 상태로 유지하는데 도움을 주는 도구가 RAG임
 
-**개념**
-- RAG는 LLM이 알고 있는 정보에만 의존하는 것이 아니라 ***지식 콘텐츠 저장소***를 통해 추가 정보와 정보의 출처를 알려줌
-    - 즉, LLM이 답변을 생성하기 전에 ***지식 콘텐츠 저장소***에서 사용자 질의와 관련된 정보를 검색하도록 지시함
-- RAG 프레임워크 플로우
-    ```
-        ① Prompt + Query   ② Query
-    User --------> Service --------> Knowledge Source
-                           <--------
-                            ③ Relevant Information for Enhanced Context
+### 개념
 
-                            ④ Prompt + Query + Enhanced Context
-                   Service --------> LLM
-    User <---------------- <--------
-                            ⑤ Generated Text Response
-    ```
+**[RAG 프레임워크 플로우]**
+    ![RAG Retrieval and generation](https://python.langchain.com/assets/images/rag_retrieval_generation-1046a4668d6bb08786ef73c56d4f228a.png "RAG - Retrieval and generation")
+
+- RAG는 LLM이 알고 있는 정보에만 의존하는 것이 아니라 ***지식 콘텐츠 저장소***를 통해 추가 정보와 정보의 출처를 알려줌
+- 즉, LLM이 답변을 생성하기 전에 ***지식 콘텐츠 저장소***에서 사용자 질의와 관련된 정보를 검색하도록 지시함
 - RAG를 사용하면 LLM을 다시 훈련할 필요없이 ***지식 콘텐츠 저장소***에 새로운 정보, 최신 정보를 지속적으로 업데이트하면 됨
-    - 따라서, RAG는 다양한 상황에서 관련성, 정확성, 유용성 유지를 위한 비용 효율적인 접근 방식임
+- 따라서, RAG는 다양한 상황에서 관련성, 정확성, 유용성 유지를 위한 비용 효율적인 접근 방식임
 - 또한, 사용자의 질의에 대해 신뢰할 수 없는 답변(ex. Hallucination)이 발생되지 않도록 할 수 있음
 - 양질의 지식 컨텐츠 저장소 구축 뿐만 아니라, LLM의 고품질 정보를 제공하기 위해 ***Retriever***을 개발해야 함
 - 답변을 생성할 때 최종적으로 사용자에게 최상의 답변을 제공할 수 있도록 ***Generation*** 개선을 위한 노력도 필요함
 
-**장점**
+### 장점
 - **환각(Hallucination) 현상 감소**
     - 모델이 자체적으로 추론하기보다는 실제 문서에서 근서를 검색해 응답을 생성하므로 사실에 기반한 응답률이 크게 향상됨
 - **최신 정보 반영 가능**
@@ -38,41 +30,83 @@
 - **출처 추적 가능성 확보**
     - 검색된 문서를 기반으로 응답을 생성하기 때문에 사용자는 어떤 자료에서 유래된 응답인지 추적 가능함
 
-**AWS 서비스**
+### AWS 서비스
 - Amazon Bedrock : 정보 보호를 유지 관리하고 개발을 간소화하여 생산형 AI 애플리케이션을 구축할 수 있음
 - Amazon Kendra : 자체 RAG를 관리하는 조직을 위해 기계 학습 기반의 매우 정확한 엔터프라이즈 검색 서비스임
     - Kendra Retrive API를 제공함
 
-## Document Indexing
+---
 
-**1. Load Document**
+## RAG 파이프라인 구축 (Framework 구성 흐름)
+
+![RAG Indexing](https://python.langchain.com/assets/images/rag_indexing-8160f90a90a33253d0154659cf7d453f.png "RAG - Indexing")
+
+### 1. 문서 로드
+
+- PDF, HTML, TXT 등 다양한 형식의 원천 데이터를 수집함
 - `langchain_community.document_loaders` 모듈의 다양한 로더 클래스를 활용하여 문서 데이터를 로드할 수 있음
     - `PyPDFLoader`: PDF 파일 로더 (`pypdf` 패키지 설치 필요)
     - `WebBaseLoader`: 웹 문서 로더 (`beautifulsoup4` 패키지 설치 필요)
     - `JSONLoader`: JSON 파일 로더 (`jq` 패키지 설치 필요)
     - `CSVLoader`: CSV 파일 로더
 
-**2. Split Texts** : RAG 파인프라인에서 적절한 문서 청크 크기 조정은 검색 성능과 LLM 응답 품질에 큰 영향을 줌
+### 2. 문서 분할
+
+- 문장 단위 또는 의미 단위로 분할함 (Chunking)
+- RAG 파인프라인에서 적절한 문서 청크 크기 조정은 검색 성능과 LLM 응답 품질에 큰 영향을 줌
 - `langchain_text_splitters` 모듈의 다양한 `TextSplitter` 클래스를 활용하여 텍스를 구조화된 청크 단위로 분할할 수 있음
     - `CharacterTextSplitter`: 지정한 문자 수를 기준으로 텍스트를 일정한 길이로 분할하며, 정규표현식을 구분자로 설정하면 문단이나 문장 단위로 자연스럽게 나누는 것도 가능함
     - `RecursiveCharacterTextSplitter`: 여러 구분자를 우선순위 순으로 순차 적용해 분할하는 방식으로, 글자 수나 토큰 수 기준 모두 가능하며 토큰 단위 분할 시에는 토크나이저가 필요함
 - `langchain_experimental.text_splitter` 모듈의 `SemanticChunker`를 활용하여 텍스트를 분할할 수 있음
     - 정량적인 기준이 아닌 의미 기반 분할을 수행하기 때문에 도메인 특화 RAG 성능을 높이는 데 효과적임
-    - 다만 임베딩 계산이 존재하여 계산 비용이 존재하며, 처리량이 많을 경우 리소스 관리 필요함
+    - 다만 임베딩 계산이 존재하여 계산 비용이 존재하며, 처리량이 많을 경우 리소스 관리가 필요함
     - **Gradient** 방식: 임베딩 벡터 간의 **기울기 변화**를 기준으로 의미가 크게 달라지는 지점을 찾아 분할함
     - **Percentile** 방식: 임베딩 거리 분포의 **백분위수**를 기준으로 급격한 의미 변화가 감지되는 구간을 분할함
     - **Standard Deviation** 방식: 임베딩 거리 분포의 **표준편차**를 활용하여 유의미한 변화 지점을 찾아 분할함
     - **Interquartile** 방식: **사분위수 범위**를 기준으로 이상치를 지점을 찾아 분할함
 
-**3. Document Embeddings** : 문서 전체를 의미적으로 표현하기 위해 임베딩 모델을 활용하여 고차원 벡터로 변환함
+### 3. 문서 임베딩
+
+- 문서 전체를 의미적으로 표현하기 위해 임베딩 모델을 활용하여 고차원 벡터로 변환함
 - 변환된 벡터는 유사도 기반 검색, 분류, 클러스터링 등 다양한 down stream task에 활용 가능함
-- 모델 선택 시 성능, 연산 비용, 다국어 지원 여부 등을 함께 고려해야 함
+- 모델 선택 시 성능, 연산 비용, 다국어 지원 여부 등을 함께 고려해야 함 ([모델 비교](./_nlp/03-document-embedding.md))
+- **OpenAI** 임베딩 모델을 활용해 문서의 의미를 고차원 벡터로 정밀하게 표현할 수 있음 ([문서](https://python.langchain.com/docs/integrations/text_embedding/openai/))
+    - ***text-embedding-3-small, text_embedding-3-large, text-embedding-ada-002*** 등의 모델을 사용할 수 있음
+        ```python
+        from langchain_openai import OpenAIEmbeddings
 
-## Vectorstore
+        embeddings_openai = OpenAIEmbeddings(
+            model="text-embedding-3-large", # 사용할 모델 이름
+            dimensions=None,                # 임베딩 차원 수
+        )
+        ```
+- **HuggingFace**에 오픈된 임베딩 모델을 활용해 로컬 환경에서 실행 할 수 있음 ([문서](https://python.langchain.com/docs/integrations/text_embedding/))
+    - ***bge-m3, all-MiniLM-L6-v2, all-mpnet-base-v2, multilingual-e5-large*** 등의 모델을 사용할 수 있음
+        ```python
+        from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+
+        embeddings_bgem3 = HuggingFaceEmbeddings(
+            model_name="BAAI/bge-m3",          # 사용할 모델 이름
+            # model_kwargs={'device': 'cuda'}  # GPU 사용시
+            # model_kwargs={'device': 'mps'}   # Mac Silicon 사용시
+        )
+        ```
+- **Ollama**를 활용해 로컬 실행에 최적화된 경량 임베딩 모델을 사용할 수 있음 ([문서](https://python.langchain.com/docs/integrations/text_embedding/))
+    - ***llama2, nomic-embed-text, codellama*** 등의 모델을 사용할 수 있음
+        ```python
+        from langchain_ollama import OllamaEmbeddings
+
+        embeddings_ollama = OllamaEmbeddings(model="bge-m3")
+        ```
+
+### 4. Vectorstore 및 Indexing 설정
 
 
+### 5. Retriever 구성
 
-## Retriever
+### 6. RAG Chain 구현
+
+
 
 ## Example 1
 
