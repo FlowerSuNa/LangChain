@@ -1,4 +1,4 @@
-# LangChain 기본 기능 사용
+# LangChain 구성 요소 맛보기
 
 **1. Setup** : `.env` 파일에 API 키 등을 입력하고, 환경 변수로 불러와 사용함
 
