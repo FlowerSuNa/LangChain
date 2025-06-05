@@ -1,6 +1,8 @@
 # Prompt
 
-## 1. Question Prompts
+## 프롬프트 유형
+
+### 1\) Question Prompts
 
 - 정보 탐색이나 사실 기반 응답을 유도할 때 효과적임
 - 간결한 질문을 통해 명확한 응답을 받을 수 있음
@@ -13,7 +15,7 @@ question_prompt = PromptTemplate.from_template(
 )
 ```
 
-## 2. Instruction Prompts
+## 2\) Instruction Prompts
 
 - 명확한 작업 지시나 단계별 처리 요청에 적합함
 - 번역, 요약, 감성 분석 등 구조화된 태스크에서 유용함
@@ -44,7 +46,7 @@ step_prompt = PromptTemplate.from_template(
 )
 ```
 
-## 3. Conversational Prompts
+## 3\) Conversational Prompts
 
 - 대화형 프롬프트는 사용자와의 자연스러운 상호작용을 통해 문맥을 지속적으로 유지할 수 있음
 - 역할 기반 메시지 구조(system, human, AI)를 활용하여 대화 흐름에 맞는 응답 생성이 가능함
@@ -58,7 +60,7 @@ chat_prompt = ChatPromptTemplate.from_messages([
 ])
 ```
 
-## 4. Few-shot Prompts
+## 4\) Few-shot Prompts
 
 - 예시 기반 학습을 통해 원하는 출력 형식을 유도할 수 있음
 - 모델의 응답 품질과 일관성을 크게 높이는 방식임
@@ -78,7 +80,7 @@ few_shot_prompt = PromptTemplate.from_template(
 )
 ```
 
-## 5. Conditional Prompts
+## 5\) Conditional Prompts
 
 - 입력의 유형에 따라 응답 로직을 다르게 구성할 수 있음
 - 프롬프트 내 조건 분기를 통해 다양한 요청을 유연하게 처리 가능함
