@@ -1,6 +1,6 @@
-# LangChain - Models
+# LangChain - 모델 (Model) 개요
 
-## 1. LLM
+## 1. LLM 개념
 
 ### 1\) 언어 모델 (Language Model, LM)
 
@@ -54,28 +54,6 @@
 ---
 
 ## 2. OpenAI 사용법
-
-- `openai` 패키지를 사용하여 API를 호출할 수 있음
-    ```python
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key = OPENAI_API_KEY # 환경 변수로 등록되어 있는 경우 입력하지 않아도 됨
-    )
-
-    # Completion 요청 (prompt -> completion)
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            # developer 역할 - 전반적인 동작 방식 정의
-            {"role": "developer", "content": "You are a assistant."},
-            # user 역할 - 실제 요청 내용
-            {"role": "user", "content": "..."},
-        ],
-        temperature=0.7,
-        max_tokens=1000,
-    )
-    ```
 
 - OpenAI에서 제공하는 LLM을 LangChain과 사용하려면 `langchain-openai` 라이브러리를 설치하여 사용할 수 있음
 - `ChatOpenAI`는 인스턴스로 생성해 LLM 응답을 처리할 수 있음
