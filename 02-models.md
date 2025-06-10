@@ -1,6 +1,10 @@
 # LangChain - 모델 (Model) 개요
 
-## 1. LLM 개념
+- 모델은 LLM 파이프라인을 중심으로, 입력된 프롬프트를 기반으로 텍스트를 생성하는 역할을 수행함
+- LangChain에서는 **OpenAI, HuggingFace, Ollama** 등 다양한 LLM 제공자와 연동할 수 있음
+- LLM의 추론 품질은 선택한 모델 종류와 설정된 파라미터에 따라 달라짐
+
+## 1. LLM 개요
 
 ### 1\) 언어 모델 (Language Model, LM)
 
@@ -15,39 +19,47 @@
 
 ### 2\) LLM 작동 방식
 
-- 입력 (Prompt) → 프롬프트 처리 → 모델 추론 (LLM) → 응답 생성 (Completion) 단계를 거침
-- 대부분 **대규모 사전 학습 모델 (Foundation Model)** 을 사용함 - ex) Gemma, Lammma, Qwen, Exaone 등
-- 이전 단어들을 기반으로 다음 단어를 하나씩 순차적으로 예측하는 방식임 (Auto-Regressive 방식)
+- LLM은 일반적으로 **사용자 입력 (Prompt) → 프롬프트 처리 → LLM 추론 → 응답 생성 (Completion)** 단계를 거쳐 작동함
+- LLM은 대부분 Gemma, Lammma, Qwen, Exaone과 같은 **대규모 사전 학습 모델 (Foundation Model)** 을 사용함
+- 이전 단어들을 기반으로 다음 단어를 하나씩 순차적으로 예측하는 Auto-Regressive 방식임
 - 각 단어는 이전까지의 모든 단어에 의존함
-- 매 단계에서 가능한 모든 단어의 확률 분포를 계산하고, 이 분포에 따라 하나의 단어를 선택함 (확률적 예측)
+- 매 단계에서 가능한 모든 단어의 확률 분포를 계산하고, 이 분포에 따라 하나의 단어를 확률적으로 선택함
 
 ### 3\) 주요 하이퍼파라미터
 
-- `max_tokens` : 생성될 최대 토큰 수
-- `temperature` : 토큰 다양성 제어 (0~2)
-    - 생성할 단어의 확률 분포를 얼마나 평탄하게 만들 것인지를 결정하는 파라미터임
-    - 낮을수록 분포가 뾰족해져 예측 가능하고 일관된 응답이 생성됨
-    - 높을수록 분포가 평탄해져 창의적이지만 예측 불가능한 응답이 생성됨
-    - `temperature=0` : 가장 확률이 높은 단어만을 선택하며, 항상 동일한 응답을 출력함 - 정확성과 일관성이 중요할 때 적합
-    - `temperature=1` : 확률 분포를 그대로 반영한 무작위 선택임
-    - `temperature=2` : 확률 분포가 매우 평탄해져 거의 균등에 가까운 단어 선택이 이루어지며, 창의적이지만 응답의 일관성과 정확성은 크게 떨어질 수 있음 - 실험적이거나 자유로운 텍스트 생성에 활용
-- `top_p` : 누적 확률 기반 토큰 선택 (0~1)
-    - 누적 확률이 일정 기준을 넘는 상위 토큰 집합에서만 샘플링을 수행함
-    - 확률 분포의 꼬리 영역(낮은 확률 토큰)을 제거하여, 현실적이고 유의미한 선택을 유도함
-    - 낮을수록 의미 없는 단어나 비정상적인 결과를 줄이는 데 유리함
-    - `top_p=0.9` : 전체 토큰 중 누적 확률이 90%에 도달할 때까지의 상위 토큰들만 고려하여 샘플링함 - 나머지 10% 확률을 가진 토큰은 샘플링 제외
-    - `top_p=1` : 모든 토큰의 확률 분포를 그대로 반영하여 샘플링함
-- `frequency_penalty` : 단어 반복 억제 조절 (-2~2)
-    - 생성 중 이미 등장한 단어가 또 나올 경우 패널티를 부여해 반복을 줄이는 역할을 함
-    - 값이 클수록 반복을 강하게 제한함
-    - `> 0`(양수) : 같은 단어가 자주 나올수록 패널티를 부여하여 반복 단어가 감소함 - 더 다양한 단어 생성
-    - `< 0`(음수) : 반복된 단어에 보상을 부여하여 단어 반복을 허용함 - 같은 표현이 자주 등장함
-- `presence penalty` : 새 단어 사용 장려 (-2~2)
-    - 양수 : 새로운 주제 도입 장려
-    - 음수 : 기존 주제 유지 선호
-- `stream` : 응답을 스트리밍 방식으로 받을지 여부
-    - False : 완성된 응답 반환
-    - True : 토큰 단위 실시간 스트리밍
+**max_tokens** : 생성될 최대 토큰 수
+
+**temperature** : 토큰 다양성 제어 (0~2)
+- 생성할 단어의 확률 분포를 얼마나 평탄하게 만들 것인지를 결정하는 파라미터임
+- 값이 낮을수록 분포가 뾰족해져 예측 가능하고 일관된 응답이 생성됨
+- 값이 높을수록 분포가 평탄해져 창의적이지만 예측 불가능한 응답이 생성됨
+- `temperature = 0` : 가장 확률이 높은 단어만을 선택하며, 항상 동일한 응답을 출력함 <br>- 정확성과 일관성이 중요할 때 적합
+- `temperature = 1` : 확률 분포를 그대로 반영한 무작위 선택임
+- `temperature = 2` : 확률 분포가 매우 평탄해져 거의 균등에 가까운 단어 선택이 이루어지며, 창의적이지만 응답의 일관성과 정확성은 크게 떨어질 수 있음 <br>- 실험적이거나 자유로운 텍스트 생성에 활용
+
+**top_p** : 누적 확률 기반 토큰 선택 (0~1)
+- 누적 확률이 일정 기준을 넘는 상위 토큰 집합에서만 샘플링을 수행함
+- 확률 분포의 꼬리 영역(낮은 확률 토큰)을 제거하여, 현실적이고 유의미한 선택을 유도함
+- 낮을수록 의미 없는 단어나 비정상적인 결과를 줄이는 데 유리함
+- `top_p = 0.9` : 전체 토큰 중 누적 확률이 90%에 도달할 때까지의 상위 토큰들만 고려하여 샘플링함 <br>- 나머지 10% 확률을 가진 토큰은 샘플링 제외
+- `top_p = 1` : 모든 토큰의 확률 분포를 그대로 반영하여 샘플링함
+
+**frequency_penalty** : 단어 반복 억제 조절 (-2~2)
+- 생성 중 이미 등장한 단어가 또 나올 경우 패널티를 부여해 반복을 줄이는 역할을 함
+- 값이 클수록 반복을 강하게 제한함
+- `frequency_penalty > 0` : 같은 단어가 자주 나올수록 패널티를 부여하여 반복 단어가 감소함 <br>- 양수이면 더 다양한 단어 생성
+- `frequency_penalty < 0` : 반복된 단어에 보상을 부여하여 단어 반복을 허용함 <br>- 음수이면 같은 표현이 자주 등장
+
+
+**presence_penalty** : 새 단어 등장 유도 (-2~2)
+- 이전에 한 번이라도 등장한 단어에 대해 패널티를 부여해 새로운 단어와 주제를 더 많이 사용하도록 유도하는 값임
+- 클수록 더 다양한 내용이 생성됨
+- `presence_penalty > 0` : 새로운 주제 도입 장려
+- `presence_penalty < 0` : 기존 주제 유지 선호
+
+**stream** : 응답을 스트리밍 방식으로 받을지 여부
+- `stream = False` : 완성된 응답 반환
+- `stream = True` : 토큰 단위 실시간 스트리밍
 
 ### 4\) LLM 활용 주의할 점
 
@@ -59,24 +71,24 @@
 
 ---
 
-## 2. OpenAI 사용법
+## 2. OpenAI 모델 사용
 
-- OpenAI에서 제공하는 LLM을 LangChain과 사용하려면 `langchain-openai` 라이브러리를 설치하여 사용할 수 있음
+- [Document](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html)
+- [Guide](https://python.langchain.com/docs/integrations/chat/openai/)
+
+- OpenAI에서 제공하는 LLM을 LangChain에서 사용하려면 `langchain-openai` 패키지를 설치해야 함
 - `ChatOpenAI`는 인스턴스로 생성해 LLM 응답을 처리할 수 있음
-    - [Document](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html)
-    - [Guide](https://python.langchain.com/docs/integrations/chat/openai/)
-    ```python
-    from langchain_openai import ChatOpenAI
+```python
+from langchain_openai import ChatOpenAI
 
-    model = ChatOpenAI(
-        model="gpt-4.1-mini",
-        # model="gpt-4.1-mini-2025-04-14", # 정확한 버전 표기
-        temperature=0.4,
-        top_p=0.7
-    )
-    ```
-- 모델 버전은 학습 날짜를 명시해 정확히 선언하는 것이 좋음
-    - [OpenAI Model Version](https://platform.openai.com/docs/pricing)
+model = ChatOpenAI(
+    model="gpt-4.1-mini",
+    # model="gpt-4.1-mini-2025-04-14", # 정확한 버전 표기
+    temperature=0.4,
+    top_p=0.7
+)
+```
+- 모델 버전은 학습 날짜를 명시해 정확히 선언하는 것이 좋음 - [OpenAI Model Version](https://platform.openai.com/docs/pricing)
     - 단순히 모델명만 지정하면, OpenAI 측의 업데이트로 인해 모델 차이가 발생할 수 있음
     - 동일한 모델명이라도 버전에 따라 응답 성향이나 성능이 달라질 수 있음
 - 모델 버전별 특징
@@ -84,10 +96,25 @@
     - gpt-4.1-mini : 빠른 속도, 낮은 비용
     - o1 계열 : 복잡한 추론 가능
 
----
 
-### 3. Ollama
 
 ---
 
-### 4. HuggingFace
+## 3. HuggingFace 모델 사용
+
+- HuggingFace의 오픈 소스 기반 모델을 LangChain에서 사용하려면 `langchain_huggingface` 패키지를 설치해야 함
+
+---
+
+## 4. Ollama 모델 사용
+
+- Ollama는 로컬 실행에 최적화된 경량 모델을 제공하며, LangChain에서 사용하려면 `langchain_ollama` 패키지를 설치해야 함
+
+
+```bash
+ollama list
+
+ollama pull gemma3:1b
+
+ollama run gemma3:1b
+```
