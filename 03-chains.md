@@ -1,4 +1,4 @@
-# LangChain - 체인 (Chain) 개요 
+# LangChain - 체인 (Chains) 개요 
 
 ## LCEL (LangChain Expression Language)
 
