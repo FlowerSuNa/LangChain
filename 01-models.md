@@ -31,8 +31,6 @@
 
 ## 2. 주요 하이퍼파라미터
 
-🔗 [HuggingFace Blog](https://huggingface.co/blog/how-to-generate)
-
 **max_tokens** : 생성될 최대 토큰 수
 - 모델이 한 번에 생성할 수 있는 응답의 최대 토큰 길이를 제한하는 파라미터임
 
@@ -87,11 +85,10 @@
 
 ### 1\) OpenAI 모델 사용
 
-🔗 [Guide 문서](https://python.langchain.com/docs/integrations/chat/openai/) / [API 문서](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html) / [OpenAI Models](https://platform.openai.com/docs/pricing)
-
 - OpenAI에서 제공하는 LLM을 LangChain에서 사용하려면 `langchain-openai` 패키지 설치가 필요함
 - `ChatOpenAI` 클래스를 통해 모델 인스턴스를 생성하고, 이를 통해 LLM 응답을 처리할 수 있음
 - OpenAI 계정에서 발급받은 **API Key**를 `OPENAI_API_KEY` 환경변수에 설정해야 하며, 외부에 노출되지 않도록 주의해야 함
+- 🔗 [설정 Guide 문서](https://python.langchain.com/docs/integrations/chat/openai/) / [API 문서](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html) / [OpenAI 모델](https://platform.openai.com/docs/pricing)
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -119,15 +116,15 @@ model = ChatOpenAI(
 
 ### 2\) HuggingFace 모델 사용
 
-🔗 [Guide 문서](https://python.langchain.com/docs/integrations/chat/huggingface/)
-
 - HuggingFace의 오픈소스 모델을 LangChain에서 사용하려면 `langchain_huggingface` 패키지 설치가 필요함 
 - 모델 로드는 `HuggingFaceEndpoint` 또는 `HuggingFacePipeline` 클래스를 통해 수행하며, 이를 `ChatHuggingFace` 클래스에 전달해 LangChain에서 사용할 수 있음
+- 🔗 [설정 Guide 문서](https://python.langchain.com/docs/integrations/chat/huggingface/)
 
-**HuggingFaceEndpoint 사용** 🔗 [API 문서](https://python.langchain.com/api_reference/huggingface/llms/langchain_huggingface.llms.huggingface_endpoint.HuggingFaceEndpoint.html)
+**HuggingFaceEndpoint 사용** 
 - `HuggingFaceEndpoint` 클래스는 `huggingface_hub` 패키지를 기반으로 작동되며, Hugging Face Hub의 API 엔드포인트를 통해 모델을 호출함
 - 서버 없이 Hugging Face **Inference API**를 바로 사용하는 구조로, 빠르게 테스트 가능함 (단, API 호출 비용이 발생함)
 - Hugging Face 계정에서 발급받은 **Access Token**을 `HUGGINGFACEHUB_API_TOKEN` 환경변수에 설정해야 함
+- 🔗 [API 문서](https://python.langchain.com/api_reference/huggingface/llms/langchain_huggingface.llms.huggingface_endpoint.HuggingFaceEndpoint.html)
 
 ```python
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
@@ -142,9 +139,10 @@ llm = HuggingFaceEndpoint(
 chat_model = ChatHuggingFace(llm=llm)
 ```
 
-**HuggingFacePipeline 사용** 🔗 [API 문서](https://python.langchain.com/api_reference/huggingface/llms/langchain_huggingface.llms.huggingface_pipeline.HuggingFacePipeline.html)
+**HuggingFacePipeline 사용** 
 - `HuggingFacePipeline` 클래스는 `transformers` 패키지를 기반으로 작동되며, 직접 로컬 서버에서 모델을 로드해 사용함
 - 자체 GPU 환경에서 모델 실행 가능하며, 비용 부담 없이 고정된 환경에서 테스트 가능함
+- 🔗 [API 문서](https://python.langchain.com/api_reference/huggingface/llms/langchain_huggingface.llms.huggingface_pipeline.HuggingFacePipeline.html)
 
 ```python
 from langchain_huggingface import ChatHuggingFace, HuggingFacePipeline
@@ -163,10 +161,9 @@ chat_model = ChatHuggingFace(llm=llm)
 
 ### 3\) Ollama 모델 사용
 
-🔗 [Guide 문서](https://python.langchain.com/docs/integrations/chat/ollama/) / [Ollama Github](https://github.com/ollama/ollama) / [Ollama Models](https://ollama.com/search)
-
 - Ollama는 로컬 실행에 최적화된 경량 LLM 플랫폼으로, GPU 없이도 쉽게 모델을 실행할 수 있음
 - LangChain에서 사용하려면 `langchain_ollama` 패키지 설치가 필요함
+- 🔗 [설정 Guide 문서](https://python.langchain.com/docs/integrations/chat/ollama/) / [Ollama Github](https://github.com/ollama/ollama) / [Ollama 모델](https://ollama.com/search)
 
 **Ollama 모델 관리 기본 명령어**
 ```bash
@@ -175,9 +172,10 @@ ollama pull gemma3:1b           # 모델 다운로드
 ollama run gemma3:1b            # 모델 실행 (없으면 자동 다운로드)
 ```
 
-**LangChain에서 Ollama 모델 사용** 🔗 [API 문서](https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html)
+**LangChain에서 Ollama 모델 사용** 
 - `ChatOllama` 클래스를 통해 LangChain에 통합 가능함
 - 내부적으로 Ollama의 REST API (http://localhost:11434)를 호출함
+- 🔗 [API 문서](https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html)
 
 ```python
 from langchain_ollama import ChatOllama
@@ -222,3 +220,9 @@ llm = ChatOllama(
 > - GPT 계열 모델의 보급으로 사용자 기대 수준이 매우 높아진 상황이며, 이에 따라 모델 선택과 응답 결과에 대한 설득력 있는 설명이 중요해짐
 > - 간단한 작업(분류, 키워드 추출 등)은 경량 오픈 소스 LLM으로도 충분히 처리 가능함
 > - 복잡한 응답 흐름에는 MCP, Agent 등의 고급 기능 활용하면 더 유연하게 구현할 수 있음
+
+---
+
+## Reference
+
+- 주요 하이퍼파라미터 설명 : 🔗 [HuggingFace Blog](https://huggingface.co/blog/how-to-generate)

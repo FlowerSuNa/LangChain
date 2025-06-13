@@ -211,6 +211,5 @@ print("답변: ", response)
 
 ## Reference
 
-- [링크1](https://brunch.co.kr/@ywkim36/147)
-- [링크2](https://wikidocs.net/231153)
+- LangChain 개념 : 🔗 [Brunch](https://brunch.co.kr/@ywkim36/147) / [Wikidocs](https://wikidocs.net/231153)
 - GPT API를 활용한 인공지능 앱 개발 [2판] | 올리비에 케일린, 마리-알리스 블레트 지음 | 이일섭, 박태환 옮김
