@@ -93,7 +93,7 @@
 ```python
 from langchain_openai import ChatOpenAI
 
-model = ChatOpenAI(
+llm = ChatOpenAI(
     model="gpt-4.1-mini",
     # model="gpt-4.1-mini-2025-04-14", # 정확한 버전 표기
     temperature=0.4,
