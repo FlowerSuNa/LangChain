@@ -238,6 +238,9 @@
 - human feedback데이터가 매우 귀함
 - 요즘은 챗봇은 rlhf 기법을 도입함
 
+---
+
+[링크](https://medium.com/@richardhightower/is-rag-dead-anthropic-says-no-290acc7bd808)
 
 
 
