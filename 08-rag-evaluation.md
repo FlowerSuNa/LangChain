@@ -244,3 +244,5 @@
 
 
 
+
+Contextual Retrieval : [Anrheopic](https://www.anthropic.com/news/contextual-retrieval)
