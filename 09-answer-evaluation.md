@@ -62,6 +62,119 @@
 - 불필요한 반복이나 장황함없이 핵심 내용을 전달하는지 (Conciseness), 논리적 흐름과 구조가 명확한지 (Coherence), 실질적인 도움이 되는 정도가 어느정도 인지 (Helpfulness), 해로운 내용을 포함하는 지 (Harmfulness/Maliciousness/Misogyny, Criminaliy) 등을 평가할 수 있음
 
 **Reference-based 평가**
+- 참조 답변(Ground Truth)과 출력을 직접 비교하는 방식임
+- 참조 답변을 기준으로 출력의 정확성과 일관성을 객관적으로 평가함
 
+```python
+from langchain.evaluation import load_evaluator
 
+# labeled criteria 평가자 정의
+labeled_crieria_evaluator = load_evaluator(
+    evaluator="labeled_criteria", 
+    criteria="correctness",
+    llm=ChatOpenAI(model="gpt-4.1-mini", temperature=0.0),
+)
 
+# 평가 수행
+labeled_crieria_eval_result = labeled_crieria_evaluator.evaluate_strings(
+    input=question,               # 평가에 고려할 내용: 질문
+    prediction=answer,            # 평가 대상: LLM 모델의 예측
+    reference=ground_truth,       # 평가 기준: 정답
+)
+```
+
+```python
+from langchain.evaluation import load_evaluator
+
+# labeled score string 평가자 정의
+labeled_score_string_evaluator = load_evaluator(
+    evaluator="labeled_score_string", 
+    criteria="relevance",
+    normalize_by=10,
+    llm=ChatOpenAI(model="gpt-4.1", temperature=0.0),
+)
+
+# 평가 수행
+labeled_score_string_eval_result = labeled_score_string_evaluator.evaluate_strings(
+    input=question,               # 평가에 고려할 내용: 질문
+    prediction=answer,            # 평가 대상: LLM 모델의 예측
+    reference=ground_truth,       # 평가 기준: 정답
+)
+```
+
+```python
+from langchain.evaluation import load_evaluator
+
+# custom labeled criteria 평가자 정의
+labeled_crieria_evaluator = load_evaluator(
+    evaluator="labeled_criteria", 
+    criteria={
+        "correctness": "Given the provided reference, is the answer correct?",
+        "relevance": "Does the answer appropriately address the question?",
+    },
+    llm=ChatOpenAI(model="gpt-4.1-mini", temperature=0.0),
+)
+
+# 평가 수행
+labeled_crieria_eval_result = labeled_crieria_evaluator.evaluate_strings(
+    input=question,               # 평가에 고려할 내용: 질문
+    prediction=answer,            # 평가 대상: LLM 모델의 예측
+    reference=ground_truth,       # 평가 기준: 정답
+)
+```
+
+```python
+from langchain_core.prompts import PromptTemplate
+from langchain.evaluation import load_evaluator
+
+# 사용자 정의 프롬프트 템플릿 생성
+template = """Respond Y or N based on how well the following response follows the specified rubric. Grade only based on the rubric and expected response:
+
+Grading Rubric: {criteria}
+Expected Response: {reference}
+
+DATA:
+---------
+Question: {input}
+Response: {output}
+---------
+Write out your explanation for each criterion in 한국어, then respond with Y or N on a new line."""
+
+prompt = PromptTemplate.from_template(template)
+
+# custom labeled criteria 평가자 정의
+labeled_crieria_evaluator = load_evaluator(
+    evaluator="labeled_criteria", 
+    criteria={
+        "correctness": "Give the provided reference, is the answer correct?",
+        "relevance": "Does the answer appropriately address the question?",    
+    },
+    llm=ChatOpenAI(model="gpt-4.1-mini", temperature=0.0),
+    prompt=prompt,                # 사용자 정의 프롬프트 사용
+)
+
+# 평가 수행
+labeled_crieria_eval_result = labeled_crieria_evaluator.evaluate_strings(
+    input=question,               # 평가에 고려할 내용: 질문
+    prediction=answer,            # 평가 대상: LLM 모델의 예측
+    reference=ground_truth,       # 평가 기준: 정답
+)
+```
+
+```python
+from langchain.evaluation import load_evaluator
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+# QA 평가기 로드
+qa_evaluator = load_evaluator(
+    "qa",        # 평가방법 지정: qa, context_qa, cot_qa 
+    llm=ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.0),  # LLM 모델 지정
+)
+
+# 평가 수행
+result = qa_evaluator.evaluate_strings(
+    prediction="서울은 대한민국의 수도이며 인구는 약 960만 명이다",
+    input="서울의 인구는 얼마인가?",
+    reference="서울의 인구는 약 960만 명이다"
+)
+```
