@@ -246,3 +246,11 @@
 
 
 Contextual Retrieval : [Anrheopic](https://www.anthropic.com/news/contextual-retrieval)
+
+
+- 고객의 피드백 데이터 확보가 LLM 시스템 성능의 키임
+- 후발 주자가 못따라가는 이유 중 하나이기도 함 (OpenAI, Claud, Gemini 따라가기 힘듬...)
+- 다만 특수 분야에 대한 것을 부족하므로 그 부분은 시장성이 있어보임..
+
+
+[평가에 대한..](https://github.com/huggingface/evaluation-guidebook)
