@@ -18,6 +18,8 @@
 
 (https://python.langchain.com/docs/how_to/sql_large_db/#many-tables)
 
+(https://python.langchain.com/docs/integrations/tools/)
+
 ## Chain 구현
 
 ### create_sql_query_chain
@@ -131,7 +133,7 @@ execute_query({"query": response["query"]})
 ```
 
 
-## Agent
+## Agent - React Pattern
 
 ```python
 from langgraph.prebuilt import create_react_agent
@@ -139,3 +141,10 @@ from langgraph.prebuilt import create_react_agent
 
 
 ## Cardinality
+
+- 고유명사 처리를 위한 벡터 스토어를 구축하고, 사용자 질문 내 고유명사 맞춤법 자동 검증 기능을 추가할 수 있음
+- 이를 통해. 정확한 엔티티 매칭을 통해 쿼리 및 검색 정확도를 향상시킬 수 있음
+
+
+---
+
