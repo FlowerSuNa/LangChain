@@ -13,6 +13,19 @@
 
 [MCP](https://modelcontextprotocol.io/introduction)
 
+---
+
+## Tool Creation
+
+- `@tool` 데코레이터를 사용하여 함수에 스키마 정보를 추가할 수 있음
+
+## Tool Binding
+
+- 모델-도구 연결로 입력 스키마를 자동 인식함
+- LLM이 도구 호출을 할지 말지 선택함 (도구 호출 전임)
+
+
+---
 
 ## Tool Calling
 
@@ -22,48 +35,38 @@
 - 구조화된 출력을 통해 API나 데이터베이스와 같은 시스템 요구사항을 충족함
 - 스키마 기반 응답으로 시스템간 효율적 통신 가능함
 
-### 1\) Tool Creation
-
-- `@tool` 데코레이터를 사용하여 함수에 스키마 정보를 추가할 수 있음
-
-### 2\) Tool Binding
-
-- 모델-도구 연결로 입력 스키마를 자동 인식함
-- LLM이 도구 호출을 할지 말지 선택함 (도구 호출 전임)
-
-
-```python
-from langchain_openai import ChatOpenAI
-
-# 모델 정의
-model = ChatOpenAI(model="gpt-4.1-mini",temperature=0)
-
-# 도구 목록
-tools = [get_weather, search_db]
-
-# 도구를 모델에 바인딩
-model_with_tools = model.bind_tools(tools)
-
-# 사용자 쿼리를 모델에 전달
-result = model_with_tools.invoke("서울 날씨 어때?") # content 비어있음, 어떤 함수를 호출할지만 정함
-
-```
-
-content='' additional_kwargs={'tool_calls': [{'id': 'call_l8a8p3CBa4kLdPJGQC8X0WO0', 'function': {'arguments': '{"city":"서울"}', 'name': 'get_weather'}, 'type': 'function'}], 'refusal': None} response_metadata={'token_usage': {'completion_tokens': 14, 'prompt_tokens': 99, 'total_tokens': 113, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}}, 'model_name': 'gpt-4.1-mini-2025-04-14', 'system_fingerprint': 'fp_6f2eabb9a5', 'id': 'chatcmpl-BoTKS9Ti1OUGzpm9FtGux1R6WZxQn', 'service_tier': 'default', 'finish_reason': 'tool_calls', 'logprobs': None} id='run--c5493795-5ee3-480b-a8ba-3b8ee9ad427e-0' tool_calls=[{'name': 'get_weather', 'args': {'city': '서울'}, 'id': 'call_l8a8p3CBa4kLdPJGQC8X0WO0', 'type': 'tool_call'}] usage_metadata={'input_tokens': 99, 'output_tokens': 14, 'total_tokens': 113, 'input_token_details': {'audio': 0, 'cache_read': 0}, 'output_token_details': {'audio': 0, 'reasoning': 0}}
-
-### 3\) Tool Calling
-
 ```python
 result.tool_calls
 ```
 
-### 4\) Tool Execution
+## Tool Execution
 
 ---
 
 ## AgentExecutor
 
+- LangChain의 기본 에이전트 실행 시스템임
+- 에이전트의 계획-실행-관찰 사이클을 자동으로 관리함
+- 에이전트의 행동을 모니터링하고 결과를 반환함
+
+1. 에이전트의 기본 행동과 응답 방식을 정의하는 프롬프트 템플릿을 작성함
+2. LLM과 도구를 통합하여 복잡한 작업을 수행하는 에이전트를 생성함 (도구 실행 결과를 분석하여 최종 응답을 생성하는 워크플로우를 구현함)
+3. 에이전트의 작업 흐름을 관리하고 결과를 처리하는 `AgentExecutor` 컴포넌트를 활용함
+    - 사용자 입력부터 최종 출력까지의 전체 프로세스를 조율하고 제어함
+    - 에러 처리, 로깅, 결과 포매팅 등 시스템 운영에 필요한 기능을 제공함
+
 
 ---
 
+## QA 체인
 
+- QA 페인을 구성하여 질의응답 시스템을 체계화할 수 있음
+- 도구 사용을 통해 사용자가 원하는 정보를 컨텍스트로 활용 가능함
+
+
+---
+
+## MCP
+
+(https://modelcontextprotocol.io/introduction)
+(https://github.com/modelcontextprotocol/python-sdk)

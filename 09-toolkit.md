@@ -4,6 +4,8 @@
 
 [LangChain 문서](https://python.langchain.com/docs/integrations/tools/)
 
+(https://python.langchain.com/docs/how_to/custom_tools/#subclass-basetool)
+
 
 ## StructuredTool
 
