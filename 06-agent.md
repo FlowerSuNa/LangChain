@@ -70,3 +70,9 @@ result.tool_calls
 
 (https://modelcontextprotocol.io/introduction)
 (https://github.com/modelcontextprotocol/python-sdk)
+(https://github.com/langchain-ai/mcpdoc/tree/main)
+(https://github.com/thedaviddias/llms-txt-hub)
+
+---
+
+## ReAct
