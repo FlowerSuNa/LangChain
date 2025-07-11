@@ -1,16 +1,63 @@
 # LangGraph
 
-[](https://langchain-ai.github.io/langgraph/concepts/low_level/#multiple-schemas)
+- 🔗 [Graph API 개념](https://langchain-ai.github.io/langgraph/concepts/low_level/#multiple-schemas) / [LangGraph Studio](https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/) / [Functional API](https://langchain-ai.github.io/langgraph/concepts/functional_api/) / [Workflows and Agents](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
+- LangGraph는 에이전트(Agent) 워크플로우를 그래프로 모델링함
 
-[LangGraph Studio](https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/)
+**핵심 구성 요소**
+-`State`: 애플리케이션의 현재 스냅샷을 나타내는 공유 데이터 구조로, 일반적으로 `TypedDict` 또는 Pydantic의 `BaseModel` 형태를 사용함
+    - 각 상태는 다른 상태에 의해 override(덮어쓰기) 될 수 있어 데이터를 유연하게 관리할 수 있음
+    - 상태 관리를 통해 체계적인 데이터 처리와 흐름 제어 가능함
+- `Nodes` : 에이전트의 로직을 인코딩하며, 현재 값을 `State` 입력으로 받고, 계산이나 부수 효과를 수행한 후 업데이트된 값을 반환함
+    - 노드는 독립적인 작업 단위로, 특정 함수를 실행함
+    - 각 노드는 다른 노드와 연결되어 데이터 흐름을 형성함
+    - 상태를 입력으로 받아 처리하고 업데이트된 상태를 반환함
+- `Edges` : 
 
-[Functional API](https://langchain-ai.github.io/langgraph/concepts/functional_api/)
-
-[](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
+---
 
 ## StateGraph
-- 상태 기반의 그래프 구조를 사용하여 대화 흐름을 제계적으로 관리함
+- 상태 기반의 그래프 구조를 사용하여 대화 흐름을 체계적으로 관리하는 그래프 클래스임
 
+```python
+from typing import TypedDict
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph, START, END
+from IPython.display import Image, display
+
+
+# LLM 인스턴스 생성
+llm = ChatOpenAI(model="gpt-4.1-mini")
+
+# 상태 정의
+class State(TypedDict):
+    original_text: str   # 원본 텍스트
+    summary: str         # 요약본
+
+# 요약 생성 노드
+def generate_summary(state: State):
+    """원본 텍스트를 요약하는 노드"""
+    # 로직
+    return {"summary": "Summary Content"}
+
+# StateGraph 객체 생성 (Workflow)
+workflow = StateGraph(State)
+
+# 노드 추가
+workflow.add_node("generate_summary", generate_summary)
+
+# 엣지 추가
+workflow.add_edge(START, "generate_summary")
+workflow.add_edge("generate_summary", END)
+
+# 그래프 컴파일
+graph = workflow.compile()
+
+# 그래프 시각화
+display(Image(graph.get_graph().draw_mermaid_png()))
+```
+
+
+---
 
 ## Command
 - LangGraph 핵심 제어 도구로, 노드 함숭의 반환값으로 사용함
