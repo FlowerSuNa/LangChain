@@ -1,68 +1,194 @@
 # LangGraph
 
-- 🔗 [Graph API 개념](https://langchain-ai.github.io/langgraph/concepts/low_level/#multiple-schemas) / [LangGraph Studio](https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/) / [Functional API](https://langchain-ai.github.io/langgraph/concepts/functional_api/) / [Workflows and Agents](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
-- LangGraph는 에이전트(Agent) 워크플로우를 그래프로 모델링함
-
-**핵심 구성 요소**
--`State`: 애플리케이션의 현재 스냅샷을 나타내는 공유 데이터 구조로, 일반적으로 `TypedDict` 또는 Pydantic의 `BaseModel` 형태를 사용함
-    - 각 상태는 다른 상태에 의해 override(덮어쓰기) 될 수 있어 데이터를 유연하게 관리할 수 있음
-    - 상태 관리를 통해 체계적인 데이터 처리와 흐름 제어 가능함
-- `Nodes` : 에이전트의 로직을 인코딩하며, 현재 값을 `State` 입력으로 받고, 계산이나 부수 효과를 수행한 후 업데이트된 값을 반환함
-    - 노드는 독립적인 작업 단위로, 특정 함수를 실행함
-    - 각 노드는 다른 노드와 연결되어 데이터 흐름을 형성함
-    - 상태를 입력으로 받아 처리하고 업데이트된 상태를 반환함
-- `Edges` : 
+- 🔗 [Graph API 개념](https://langchain-ai.github.io/langgraph/concepts/low_level/) / [LangGraph Studio](https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/) / [Functional API](https://langchain-ai.github.io/langgraph/concepts/functional_api/) / [Workflows and Agents](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
+- 복잡한 워크플로우(에이전트, 다단계 문서 처리 등)를 그래프 형태로 모델링할 수 있음
+- 그래프의 노드와 엣지 단위로 데이터 흐름을 시각적이고 구조적으로 표현 가능함
+- LangChain과 함께 사용해 체인 기반 처리와 그래프 기반 로직을 병행할 수 있음
+- LangChain의 직렬 구조보다 분기, 병합, 루프 등 복잡한 로직을 더 유연하게 구현 가능함
+- 노드/엣지 단위 모듈화로 재사용성과 확장성이 높음
+- 그래프 시각화 도구와 연동해 전체 흐름을 직관적으로 디버깅할 수 있음
 
 ---
 
-## StateGraph
-- 상태 기반의 그래프 구조를 사용하여 대화 흐름을 체계적으로 관리하는 그래프 클래스임
+## 1. 핵심 구성 요소
+
+**State**
+- 앱 전체에서 공유되는 데이터 스냅샷을 나타내는 구조임
+- 일반적으로 `TypedDict` 또는 Pydantic의 `BaseModel` 형태로 정의함
+- 각 노드 실행 결과로 상태가 덮어쓰기(override) 되어 업데이트됨
+- 상태 기반으로 데이터 흐름을 체계적으로 제어할 수 있음
+
+**Nodes**
+- 에이전트의 개별 행동 단위로, 주어진 상태를 입력받아 처리함
+- 내부적으로 함수 또는 연산 로직을 실행하고, 새로운 상태값을 반환함
+- 하나의 노드는 하나의 작업(task)를 수행함
+- 각 노드는 다른 노드와 연결되어 데이터 흐름을 형성함
+
+**Edges**
+- 현재 상태를 따라 다음에 실행할 노드를 결정함
+- 조건 분기 로직이 포함될 수 있음
+- 노드 간의 실행 순서를 제어하며, LangGraph의 흐름을 결정함
+
+---
+
+## 2. Graph 작성
+
+### 1\) Graph 생성
+
+**StateGraph**
+- 상태 기반 그래프 구조를 정의하는 핵심 클래스임
+- 대화나 처리 흐름을 `START` → `END` 구조로 체계적으로 구성함
+- 노드 간 전환은 엣지를 통해 정의하며, 복잡한 조건 분기도 처리 가능함
+
+**add_node**
+- 그래프에 새로운 노드(작업 단위)를 추가하는 메소드임
+- 각 노드는 독립적인 함수를 실행하며, 상태를 입력받아 결과를 반환함
+
+**add_edge**
+- 두 노드 간의 직접적인 실행 순서(연결 관계)를 정의하는 메소드임
+- 한 노드의 실행이 끝난 후 다음 노드로 흐름을 이동시킴
+
+**add_conditional_edges**
+- 특정 조건에 따라 다음 노드를 동적으로 선택하는 분기 로직을 정의하는 메소드임
+- 상태 값 또는 함수 변환값에 따라 흐름이 달라질 수 있음
 
 ```python
-from typing import TypedDict
-from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
+from typing import TypedDict, Literal
 from IPython.display import Image, display
 
+# 1. 상태 정의
+class MyState(TypedDict):
+    name: str
+    is_morning: bool
 
-# LLM 인스턴스 생성
-llm = ChatOpenAI(model="gpt-4.1-mini")
+# 2. 노드 함수 정의
+def greet_user(state: MyState) -> MyState:
+    print(f"Hi, {state['name']}!")
+    return state
 
-# 상태 정의
-class State(TypedDict):
-    original_text: str   # 원본 텍스트
-    summary: str         # 요약본
+def say_good_morning(state: MyState) -> MyState:
+    print("Good morning!")
+    return state
 
-# 요약 생성 노드
-def generate_summary(state: State):
-    """원본 텍스트를 요약하는 노드"""
-    # 로직
-    return {"summary": "Summary Content"}
+def say_hello(state: MyState) -> MyState:
+    print("Hello!")
+    return state
 
-# StateGraph 객체 생성 (Workflow)
-workflow = StateGraph(State)
+# 3. 조건 함수 정의
+def is_morning(state: MyState) -> Literal["morning", "not_morning"]:
+    return "morning" if state["is_morning"] else "not_morning"
 
-# 노드 추가
-workflow.add_node("generate_summary", generate_summary)
+# 4. 그래프 구성
+builder = StateGraph(MyState)
 
-# 엣지 추가
-workflow.add_edge(START, "generate_summary")
-workflow.add_edge("generate_summary", END)
+builder.add_node("greet_user", greet_user)
+builder.add_node("say_good_morning", say_good_morning)
+builder.add_node("say_hello", say_hello)
 
-# 그래프 컴파일
-graph = workflow.compile()
+builder.add_edge(START, "greet_user")
+builder.add_conditional_edges(
+    "greet_user",
+    is_morning,
+    {
+        "morning": "say_good_morning",
+        "not_morning": "say_hello",
+    },
+)
+builder.add_edge("say_good_morning", END)
+builder.add_edge("say_hello", END)
 
-# 그래프 시각화
+# 5. 그래프 컴파일
+graph = builder.compile()
 display(Image(graph.get_graph().draw_mermaid_png()))
 ```
+
+![alt text](_png/09-langgraph00.png)
+
+### 2\) Graph 실행
+
+**invoke**
+- 그래프를 한 번 실행하여 최종 결과 상태를 반환함
+
+```python
+graph.invoke({"name": "Bob", "is_morning": True})
+
+"""
+Hi, Bob!
+Good morning!
+{'name': 'Bob', 'is_morning': True}
+"""
+```
+
+**stream**
+- 그래프 실행 과정을 스트리밍 형태로 순차 출력함
+
+- `stream_mode="values"`
+    - 상태 값의 변경 내역만 출력함
+    - 각 노드 실행 이후의 상태를 확인할 수 있음
+
+```python
+for step in graph.stream({"name": "Bob", "is_morning": False}, stream_mode="values"):
+    print(step)
+    print("---"*10)
+
+"""
+{'name': 'Bob', 'is_morning': False}
+------------------------------
+Hi, Bob!
+{'name': 'Bob', 'is_morning': False}
+------------------------------
+Hello!
+{'name': 'Bob', 'is_morning': False}
+------------------------------
+"""
+```
+
+- `stream_mode="updates"`
+    - 어떤 노드가 어떤 값을 업데이트했는지까지 출력됨
+    - 상태 변환뿐 아니아 노드별 실해우 결과 추적이 가능하여 디버깅용으로 사용할 수 있음
+
+```python
+for step in graph.stream({"name": "Bob", "is_morning": False}, stream_mode="updates"):
+    print(step)
+    print("---"*10)
+
+"""
+Hi, Bob!
+{'greet_user': {'name': 'Bob', 'is_morning': False}}
+------------------------------
+Hello!
+{'say_hello': {'name': 'Bob', 'is_morning': False}}
+------------------------------
+"""
+```
+
+---
+
+## 3. Graph 고급 기능
+
+### 1\) Command
+
+- LangGraph 핵심 제어 도구로, 노드 함수의 반환값으로 사용됨
+- 상태 업데이트와 다음 노드 지정이라는 두 가지 역할을 동시에 수행할 수 있음
+- 복잡한 흐름 제어나 정보 전달이 필요한 상황에서 유용함
+- 그래프 실행 중 동적으로 상태를 수정하거나 분기를 제어할 수 있음
+
+**Command** vs **add_conditional_edges**
+- `Command`는 상태 업데이트와 노드 이동을 동시에 처리할 때 사용되며, 특히 정보 전달이 필요한 복잡한 전환에 적합함
+- `add_conditional_edged`는 단순한 분기 처리에 사용되며, 상태 변경 없이 조건에 따른 이동만 수행함
+- 상태 업데이트 필요 여부에 따라 두 방식의 선택 기준이 결정될 수 있음
+
+
+### 
+
+
 
 
 ---
 
 ## Command
-- LangGraph 핵심 제어 도구로, 노드 함숭의 반환값으로 사용함
-- 상태 관리와 흐름 제어를 동시에 수행할 수 있어 효율적인 그래프 운영이 가능함
-- 그래프의 상태를 동적으로 업데이트하면서 다음 실행할 노드를 지정할 수 있음
+
 
 
 ## Graph API
