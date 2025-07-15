@@ -175,207 +175,54 @@ Hello!
 - 그래프 실행 중 동적으로 상태를 수정하거나 분기를 제어할 수 있음
 
 **Command** vs **add_conditional_edges**
-- `Command`는 상태 업데이트와 노드 이동을 동시에 처리할 때 사용되며, 특히 정보 전달이 필요한 복잡한 전환에 적합함
-- `add_conditional_edged`는 단순한 분기 처리에 사용되며, 상태 변경 없이 조건에 따른 이동만 수행함
-- 상태 업데이트 필요 여부에 따라 두 방식의 선택 기준이 결정될 수 있음
+- `Command`는 노드 내부에서 상태를 업데이트하면서 다음 노드를 지정할 수 있음
+- `add_conditional_edged`는 상태 변경 없이 조건에 따라 정적으로 분기만 처리함
+- 복잡한 전이와 상태 변경이 필요한 경우 `Command`가 적합함
+- 단순한 조건 분기만 필요한 경우 `add_conditional_edges` 사용이 효율적임
 
+### 2\) Reducer
 
-### 
+- `Reducer`는 상태 업데이트 방식의 핵심 메커니즘임
+- 기본 동작은 각 노드의 반환값이 해당 키의 기존 값을 덮어쓰는 방식(override)으로 작동함
+- 따라서 상태 값을 누적하거나 병합해야 하는 경우, `Reducer`를 명시적으로 등록해야 함
+- 리스트에 항목을 계속 추가하거나, 딕셔너리를 병합할 때 사용함
+- `operator.add`를 사용해 기존 리스트에 새 메시지를 추가할 수 있음
+- 더 복잡한 상태 관리가 필요한 경우, `Reducer`를 사용자 정의하여 적용할 수 있음
 
-
-
-
----
-
-## Command
-
-
-
-## Graph API
-
-## Reducer
-
-[](https://langchain-ai.github.io/langgraph/concepts/low_level/#reducers)
-
-## Messages
+### 3\) Messages
 
 - LangGraph는 메시지 목록 기반의 채팅 모델 인터페이스를 활용함
 - 그래프 상태에서 대화 기록은 메시지 객체 리스트로 저장되며, 이를 통해 효율적인 대화 관리가 가능함
 - reducer 함수를 통해 상태 업데이트 시 메시지 목록이 어떻게 갱신될지 정의할 수 있음
 
-`add_messages`
-- 메시지 ID를 기반으로 기존 메시지를 업데이트하거나 새 메시지를 추가하는 고급 관리 기능을 제공함
-- 기존 메시지의 중복 추가를 방지함
+- `langgraph.graph.message.add_messages`를 활용하여 메시지 객체를 리스트 형태로 효율적인 대화 관리를 할 수 있음
+    - 메시지 ID를 기반으로 기존 메시지를 업데이트하거나 새 메시지를 추가하는 고급 관리 기능을 제공함
+    - 새 메시지는 기존 목록에 추가하고, 기존 메시지는 올바르게 처리함
+    - 기존 메시지의 중복 추가를 방지함
 
-`MessagesState`
-
-## Map-Reduce 패턴
-
-- 동적으로 엣지를 생성하고, 개별 상태를 전달하는 방식임 (분산처리)
+- `MessagesState`는 메시지 관리를 위해 미리 정의된 상태 타입으로, `add_messages` 리듀서를 기본으로 사용하여 메시지 업데이트를 자동으로 처리함
+- `MessagesState` 클래스를 상속하여 새로운 상태 타입을 정의할 수 있음
 
 
-```python
-from typing import Annotated, List, TypedDict, Optional
-from pydantic import BaseModel
-from langchain_community.tools import DuckDuckGoSearchResults
-from langgraph.graph import StateGraph, START, END
-from langgraph.types import Send
-import operator
-from IPython.display import Image, display
+### 4\) Send
+- 동적으로 엣지를 생성하고, 각기 다른 상태를 병렬로 전달할 수 있는 메커니즘임
+- 상태 분기 및 분산 처리를 위한 핵심 기능이며, 특히 Map-Reduce 패턴에 활용됨
+- 하나의 상태를 여러 하위 작업에 분배하고, 각 작업 결과를 다시 모아 처리하는 구조로 구현 가능함
+- 데이터 샤딩, 병렬 작업, 결과 통합 등 대규모 작업 분산 처리에 적합함
 
-# 팩트 체크 결과를 위한 Pydantic 모델
-class FactCheckResult(BaseModel):
-    sentence: str
-    score: float
-
-# 전체 상태 정의 (글로벌 상태)
-class OverallState(TypedDict):
-    query: str  # 검색 쿼리
-    search_results: Optional[str]  # 검색 결과
-    summary: Optional[str]  # 요약문
-    fact_check: Annotated[List[FactCheckResult], operator.add]  # 팩트체크 결과 (누적)
-
-# 로컬 상태 (단일 문장 팩트체크용)
-class SentenceState(TypedDict):
-    sentence: str  # 팩트체크할 문장
+**Map-Reduce 패턴**
+- 대규모 데이터를 처리할 때 흔히 사용하는 분산 처리 방식임
+- `Send` 객체를 사용하여 Map 단계를 구현할 수 있음
+- Map 단계는 하나의 노드를 여러 개의 작업으로 분할함
+- Reduce 단계는 각 병렬 노드의 실행 결과를 결합함
 
 
-def search_info(state: OverallState) -> OverallState:
-    search_tool = DuckDuckGoSearchResults(output_format="list")
-    query = state["query"]
 
-    # 검색 실행
-    results = search_tool.invoke({"query": query})
-
-    # 상위 3개 결과만 사용 (snippet 필드)
-    filtered_results = [item['snippet'] for item in results][:3]
-
-    return {
-        "search_results": filtered_results
-    }
-
-def generate_summary(state: OverallState) -> OverallState:
-    if not state["search_results"]:
-        return {"summary": "검색 결과가 없습니다."}
-
-    summary_prompt = """
-    다음 검색 결과들을 요약해주세요:
-    {search_results}
-
-    핵심 포인트 3-4개로 간단히 요약:
-    """
-
-    summary = llm.invoke(summary_prompt.format(
-        search_results="\n\n".join(state["search_results"])
-    ))
-
-    return {"summary": summary.content}
-
-def fact_check_sentences(state: OverallState):
-    if not state["summary"]:
-        return {"fact_check": []}
-
-    # 요약된 문장들을 분리 (간단하게 개항문자로 분리)
-    sentences = state["summary"].split("\n\n")
-    sentences = [s.strip() for s in sentences if s.strip()]  # 빈 문자열 제거
-
-    print(f"Fact-checking {len(sentences)} sentences...")
-
-    # 각 문장에 대해 팩트 체크 작업을 생성 (Send 사용)
-    return [
-        Send("fact_check_sentence", {"sentence": s}) for s in sentences
-    ]
-
-def fact_check_single_sentence(state: SentenceState) -> OverallState:
-    """개별 문장에 대한 팩트체크 수행"""
-    sentence = state["sentence"]
-    print(f"Fact-checking sentence: {sentence}")
-
-    prompt = f"""
-    다음 문장의 사실 여부를 평가하고 신뢰도 점수를 0과 1 사이로 제공해주세요:
-    문장: {sentence}
-    신뢰도 점수:
-    """
-    response = llm.invoke(prompt)
-
-    # 팩트체크 결과 생성
-    print(f"Fact-check result: {response.content}")
-    
-    try:
-        score = float(response.content)
-        score = max(0.0, min(1.0, score))  # 0과 1 사이로 제한
-    except ValueError:
-        score = 0.5  # 기본값
-    
-    return {
-        "fact_check": [FactCheckResult(sentence=sentence, score=score)]
-    }
-
-# 그래프 구성
-builder = StateGraph(OverallState)
-
-# 노드 추가
-builder.add_node("search", search_info)
-builder.add_node("generate_summary", generate_summary)
-builder.add_node("fact_check_sentence", fact_check_single_sentence)
-
-# 엣지 추가
-builder.add_edge(START, "search")
-builder.add_edge("search", "generate_summary")
-builder.add_conditional_edges(
-    "generate_summary",
-    fact_check_sentences,
-    ["fact_check_sentence"]
-)
-
-builder.add_edge("fact_check_sentence", END)
-
-# 그래프 컴파일
-graph = builder.compile()
-
-# 그래프 시각화
-display(Image(graph.get_graph().draw_mermaid_png()))
-
-# 사용자 질문
-inputs = {"query": "기후 변화의 주요 원인은 무엇인가요?"}
-
-# 그래프 실행
-result = graph.invoke(inputs)
-pprint(result)
-```
 
 ## Tool Node
 
 - 모델이 사전에 정의된 도구 호출을 실행하는 역할하는 LangGraph 구성요소임
 
-```python
-from langgraph.prebuilt import ToolNode
-
-# 도구 노드 정의
-db_tool_node = ToolNode(tools=tools)
-
-# LLM 모델 생성
-llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0)
-
-# 도구를 바인딩하여 모델 생성
-llm_with_tools = llm.bind_tools(tools=tools)
-
-# 도구 호출 - 한국어
-tool_call = llm_with_tools.invoke([HumanMessage(content=f"테슬라는 누가 창립했나요?")])
-
-# 도구 호출 내용 출력
-pprint(tool_call.tool_calls)
-print("-" * 100)
-
-# 도구 호출 결과를 메시지로 추가하여 실행
-results = db_tool_node.invoke({"messages": [tool_call]})
-
-# 실행 결과 출력하여 확인
-for result in results['messages']:
-    print(f"메시지 타입: {type(result)}")
-    print(f"메시지 내용: {result.content}")
-    print()
-```
 
 ## ReAct Agent (Reasoning and Acting)
 
