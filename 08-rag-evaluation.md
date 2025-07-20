@@ -254,3 +254,8 @@ Contextual Retrieval : [Anrheopic](https://www.anthropic.com/news/contextual-ret
 
 
 [평가에 대한..](https://github.com/huggingface/evaluation-guidebook)
+
+[](https://docs.smith.langchain.com/evaluation/tutorials/agents?_gl=1*1dsm7vj*_gcl_au*NjY4MDM2NzUwLjE3NDc5MDIyNjM.*_ga*NjE1MTEyNDE5LjE3NTE5MzQ0MjU.*_ga_47WX3HKKY2*czE3NTI4OTQwMzYkbzMzJGcxJHQxNzUyODk0MTM5JGo2MCRsMCRoMA..#trajectory)
+[](https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_crag_local/?h=trajectory#response)
+[](https://arxiv.org/abs/2401.16745)
+[](https://huggingface.co/papers/2401.16745)
